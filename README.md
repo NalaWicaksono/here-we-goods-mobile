@@ -45,3 +45,28 @@ StatefulWidget: Memiliki objek State terpisah yang bisa berubah seiring waktu. C
 6. Hot reload: Menyuntikkan perubahan kode ke VM dan membangun ulang widget tanpa menginisialisasi ulang state (dengan beberapa pengecualian). Cepat untuk iterasi UI.
 
 Hot restart: Menjalankan ulang aplikasi dari awal sehingga seluruh state kembali ke kondisi awal.
+
+Tugas 8
+
+1. push: menumpuk halaman baru di atas stack --> bisa kembali dengan back.
+Di app: tombol Create Product dari Home --> push (user bisa kembali ke Home).
+
+pushReplacement: mengganti halaman saat ini --> tidak bisa kembali ke halaman lama.
+Di app: navigasi lewat Drawer agar tidak menumpuk halaman atau setelah Save jika ingin menutup form permanen.
+
+2. Scaffold: rangka tiap halaman (punya appBar, drawer, body) --> konsisten di semua page.
+
+AppBar: judul yang jelas per halaman (Home vs Create Product).
+
+Drawer: menu global yang sama di semua halaman (Home, Create Product).
+Hasilnya: layout dan navigasi terasa seragam di seluruh aplikasi. 
+
+3. Padding: memberi ruang di sekitar field --> rapi & mudah dibaca.
+
+SingleChildScrollView: form bisa discroll saat layar kecil/keyboard muncul --> tidak overflow.
+
+ListView: menata item vertikal responsif (mis. daftar tombol di Home pada layar sempit).
+Contoh singkat: form dibungkus SingleChildScrollView, tiap TextFormField diberi Padding.
+
+4. Set di ThemeData (misalnya seed blue/indigo) dan pakai konsisten untuk AppBar, tombol utama, dan aksen.
+Hasilnya: AppBar biru, tombol Save indigo, elemen lain mengikuti palet yang sama → identitas visual konsisten.
