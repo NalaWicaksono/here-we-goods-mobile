@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'screens/menu.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'screens/login.dart';   
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const HereWeGoodsApp());
@@ -10,14 +12,17 @@ class HereWeGoodsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Here We Goods - Football Shop',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
+    return Provider<CookieRequest>(
+      create: (_) => CookieRequest(),
+      child: MaterialApp(
+        title: 'Here We Goods - Football Shop',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          useMaterial3: true,
+        ),
+        home: const LoginPage(),
       ),
-      home: const HomePage(),
     );
   }
 }

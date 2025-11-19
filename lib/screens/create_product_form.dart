@@ -1,5 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import '../screens/product_list.dart';
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../widgets/left_drawer.dart';
+import '../config.dart';
 import 'package:flutter/services.dart';
 
 class CreateProductPage extends StatefulWidget {
@@ -45,49 +51,68 @@ class _CreateProductPageState extends State<CreateProductPage> {
 
   void _save() {
     if (!_formKey.currentState!.validate()) return;
+    final request = context.read<CookieRequest>();
+
+    // Prepare payload following tutorial expectations
+    final payload = jsonEncode({
+      'title': _name,
+      'content': _description,
+      'thumbnail': _thumbnail,
+      'category': _category,
+      'is_featured': _isFeatured,
+      'price': _price ?? 0,
+    });
 
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Produk berhasil tersimpan'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Name: $_name'),
-                Text('Price: ${_price ?? 0}'),
-                Text('Description: $_description'),
-                Text('Category: $_category'),
-                Text('Thumbnail: $_thumbnail'),
-                Text('Featured: ${_isFeatured ? "Ya" : "Tidak"}'),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.pop(context);
-                _formKey.currentState!.reset();
-                setState(() {
-                  _name = '';
-                  _price = null;
-                  _description = '';
-                  _category = 'Jersey';
-                  _thumbnail = '';
-                  _isFeatured = false;
-                });
-              },
-            ),
-          ],
-        );
-      },
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+
+    request.postJson(kCreateUrl, payload).then((res) {
+      Navigator.pop(context); // dismiss loading
+      if ((res['status']?.toString() ?? '') == 'success') {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Produk berhasil tersimpan.')));
+        _formKey.currentState!.reset();
+        setState(() {
+          _name = '';
+          _price = null;
+          _description = '';
+          _category = 'Jersey';
+          _thumbnail = '';
+          _isFeatured = false;
+        });
+        // Navigate to products list
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProductsListPage()));
+      } else {
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Gagal menyimpan'),
+            content: Text(res['message']?.toString() ?? 'Unknown error'),
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+          ),
+        );
+      }
+    }).catchError((err) {
+      Navigator.pop(context);
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(err.toString()),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+        ),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // make sure CookieRequest is available when posting
     return Scaffold(
       appBar: AppBar(
         title: const Center(child: Text('Create Product Form')),
@@ -154,7 +179,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
               Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: DropdownButtonFormField<String>(
-                  value: _category,
+                  initialValue: _category,
                   decoration: InputDecoration(
                     labelText: 'Category',
                     border: OutlineInputBorder(
@@ -201,13 +226,13 @@ class _CreateProductPageState extends State<CreateProductPage> {
                   child: ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor:
-                          MaterialStateProperty.all<Color>(Colors.indigo),
+                          WidgetStateProperty.all<Color>(Colors.indigo),
                       foregroundColor:
-                          const MaterialStatePropertyAll<Color>(Colors.white),
-                      padding: const MaterialStatePropertyAll<EdgeInsets>(
+                          const WidgetStatePropertyAll<Color>(Colors.white),
+                      padding: const WidgetStatePropertyAll<EdgeInsets>(
                         EdgeInsets.symmetric(horizontal: 22, vertical: 12),
                       ),
-                      shape: MaterialStatePropertyAll(
+                      shape: WidgetStatePropertyAll(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

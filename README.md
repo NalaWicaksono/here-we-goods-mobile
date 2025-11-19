@@ -70,3 +70,34 @@ Contoh singkat: form dibungkus SingleChildScrollView, tiap TextFormField diberi 
 
 4. Set di ThemeData (misalnya seed blue/indigo) dan pakai konsisten untuk AppBar, tombol utama, dan aksen.
 Hasilnya: AppBar biru, tombol Save indigo, elemen lain mengikuti palet yang sama → identitas visual konsisten.
+
+---
+
+Tugas 9
+1. 
+Membuat model Dart membantu menjaga ketepatan tipe dan null-safety ketika membaca/menulis JSON: setiap field punya tipe jelas (mis. `String`, `int`, `bool`), validasi dan transformasi nama field bisa dipusatkan di `fromJson/toJson`, dan perubahan skema backend cukup diperbaiki di satu tempat. Jika langsung memakai `Map<String, dynamic>`, kode rawan salah ketik key, casting runtime error, nilai `null` tak terkontrol, dan proyek jadi lebih sulit dirawat.
+
+2. 
+Package `http` adalah klien HTTP dasar untuk GET/POST tanpa pengelolaan sesi; cocok untuk request “stateless”. `CookieRequest` dari `pbp_django_auth` menambahkan manajemen cookie sesi Django dan helper seperti `login()`, `logout()`, serta `postJson()` sehingga autentikasi berbasis session bekerja otomatis di request berikutnya. Jadi, `http` untuk kebutuhan umum, `CookieRequest` untuk endpoint yang membutuhkan login Django.
+
+3. 
+Satu instance `CookieRequest` menyimpan cookie sesi yang sama di seluruh halaman, sehingga status login konsisten saat pengguna berpindah layar. Dengan membagikannya via `Provider`, semua widget dapat mengakses sesi tanpa bolak-balik mengoper instance secara manual, dan kita terhindar dari masalah “kehilangan sesi” akibat membuat objek baru.
+
+4. 
+Flutter perlu mengarah ke host yang diizinkan Django: di emulator Android, `localhost` harus diakses sebagai `10.0.2.2`, sehingga alamat itu perlu ditambahkan ke `ALLOWED_HOSTS`. Untuk akses lintas origin dan pengiriman cookie sesi, aktifkan CORS serta atur kebijakan SameSite/CSRF yang sesuai. Di Android tambahkan izin internet pada `AndroidManifest.xml`. Jika konfigurasi ini salah, permintaan bisa gagal (network/CORS error), cookie tak terkirim (autentikasi tidak tersimpan), atau Django menolak host (Bad Request/403).
+
+5. 
+Pengguna mengisi form di Flutter, lalu data dikirim ke Django (mis. `postJson`). Django memvalidasi dan menyimpan objek, kemudian membalas JSON. Flutter menerima JSON tersebut, memetakannya ke model Dart, memperbarui state (mis. lewat `FutureBuilder`/`setState`), lalu menampilkan daftar atau detail item. Untuk filter “milik saya”, backend bisa memberi penanda pemilik atau menyediakan query `?filter=my`, yang kemudian diolah Flutter saat menampilkan.
+
+6. 
+Saat register, Flutter mengirim `username`, `password1`, dan `password2` ke endpoint Django yang membuat akun baru. Untuk login, Flutter memanggil `request.login()`, Django memverifikasi kredensial dan mengembalikan cookie sesi; `CookieRequest` menyimpannya sehingga request berikutnya otomatis terautentikasi. Setelah login sukses, aplikasi menavigasi ke menu utama. Logout memanggil endpoint Django untuk menghapus sesi, `CookieRequest` membersihkan cookie, dan Flutter mengarahkan kembali ke halaman login.
+
+7. 
+- Backend jalan (runserver/deploy), set ALLOWED_HOSTS, CORS/CSRF (jika perlu), izin internet Android.
+- Provider + CookieRequest di main.dart (root app).
+- Buat Login & Register (pakai endpoint /auth/.../), navigasi & snackbar.
+- Buat model Dart sesuai skema Django.
+- Buat halaman Products List (GET /items/json/), tampilkan name, price, description, thumbnail, category, is_featured.
+- Buat Product Detail (tap card → detail; tombol Kembali).
+- Filter item milik user (param ?filter=my atau memakai owner_username dari JSON).
+- Tambah Logout di Drawer; tombol Home/All Products/ Create Product tetap jalan.
